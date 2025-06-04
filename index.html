@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>will_you_be_my_family?</title>
+  <style>
+    /* Set the basic style for the entire page */
+    body {
+      font-family: 'Arial', sans-serif;        /* Use Arial font */
+      background-color: #fff5f5;               /* Light pink background */
+      margin: 0;
+      padding: 0;
+      height: 100vh;                           /* Full height of the viewport */
+      display: flex;
+      justify-content: center;                 /* Center horizontally */
+      align-items: center;                     /* Center vertically */
+    }
+
+    /* Container for the homepage buttons */
+    .home {
+      display: flex;
+      flex-direction: column;                  /* Stack items vertically */
+      gap: 30px;                               /* Space between dog/cat buttons */
+      align-items: center;                     /* Center items horizontally */
+    }
+
+    /* Style for each adoption button */
+    .adopt-card {
+      border-radius: 20px;                     /* Rounded corners */
+      padding: 40px 20px;                      /* Inner spacing */
+      color: white;                            /* Text color */
+      text-align: center;                      /* Center text */
+      font-size: 24px;                         /* Text size */
+      font-weight: bold;
+      cursor: pointer;                         /* Pointer cursor on hover */
+      text-decoration: none;                   /* Remove underline from links */
+      width: 250px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+      transition: transform 0.2s ease;         /* Smooth scaling effect */
+    }
+
+    /* Scale effect on hover */
+    .adopt-card:hover {
+      transform: scale(1.05);                  /* Slightly enlarge the card */
+    }
+
+    /* Light blue background for dog adoption card */
+    .dog {
+      background-color: #b3d9ff;
+    }
+
+    /* Light pink background for cat adoption card */
+    .cat {
+      background-color: #f9c5d1;
+    }
+  </style>
+</head>
+<body>
+  <main class="home">
+    <!-- Button that links to dog adoption page -->
+    <a href="breeds.html?type=dog" class="adopt-card dog">Adopt a Dog</a>
+
+    <!-- Button that links to cat adoption page -->
+    <a href="breeds.html?type=cat" class="adopt-card cat">Adopt a Cat</a>
+  </main>
+</body>
+</html>

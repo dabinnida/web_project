@@ -1,0 +1,75 @@
+/* Grid container in breeds.html */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Style for each pet card */
+.pet-card {
+  border-radius: 15px;
+  padding: 20px;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform .2s;
+}
+.pet-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Search bar style */
+.filters input#search {
+  width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.filters input#search::placeholder {
+  color: #aaa;
+}
+
+/* Filter button default and active styles */
+.filters .filter {
+  padding: 6px 12px;
+  margin-left: 8px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.filters .filter:hover {
+  background-color: #eee;
+}
+
+.filters .filter.active {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+/* Modal background and positioning */
+.modal {
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* Modal content style */
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+}

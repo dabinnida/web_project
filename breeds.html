@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>list_of_dog_cat</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Base body styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #fff0f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Filters layout for both main and breed-specific filters */
+    .filters, .breed-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    /* Search input field styling */
+    .filters input[type="text"] {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+    }
+
+    /* Generic button styling for all filters */
+    .filters button, .breed-filters button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background-color: #f9c5d1;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Cat filter button (pink color) */
+    .filters button[data-type="cat"], .breed-filters button.cat {
+      background-color: #f9c5d1;
+    }
+
+    /* Dog filter button (blue color) */
+    .filters button[data-type="dog"], .breed-filters button.dog {
+      background-color: #b3d9ff;
+    }
+
+    /* "Available" filter button style */
+    .filters button[data-available] {
+      background-color: #d1e0ff;
+    }
+
+    /* Grid layout for displaying pet cards */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    /* Individual pet card design */
+    .pet-card {
+      width: 180px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      background-color: #ffeef0;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    /* Hover effect for pet card */
+    .pet-card:hover {
+      transform: scale(1.03);
+    }
+
+    /* Pet image inside card */
+    .pet-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    /* Pet name styling */
+    .pet-card h3 {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    /* Favorite button (heart icon) */
+    .fav-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #ff5a5f;
+    }
+
+    /* Active favorite heart (filled) */
+    .fav-btn.active {
+      color: #ff0000;
+    }
+
+    /* Modal background overlay */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Modal content box */
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+
+    /* Close (X) button inside modal */
+    .modal-content span {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- Top filter section including search, breed, personality, availability, and favorites -->
+    <div class="filters">
+      <input type="text" id="search" placeholder="검색...">
+      <button class="filter" data-personality="조용함">성격</button>
+      <button id="breed-toggle" class="filter">종 (Breed)</button>
+      <button class="filter" data-available="true">Available</button>
+      <button id="show-favorites" class="filter">즐겨찾기만 보기</button>
+    </div>
+
+    <!-- Hidden breed-specific filter buttons (toggled by breed button) -->
+    <div id="breed-filters" class="breed-filters" style="display:none;"></div>
+
+    <!-- Grid container for rendering pet cards -->
+    <div id="pet-list" class="grid"></div>
+  </main>
+
+  <!-- Modal window for pet detail view -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span id="close-modal">&times;</span>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    // Get 'type' parameter from the URL (either 'dog' or 'cat')
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedType = urlParams.get('type');
+    let allPets = [];
+
+    // Fetch pet data from breeds.json
+    fetch('data/breeds.json')
+      .then(res => res.json())
+      .then(data => {
+        allPets = data;
+        const filtered = selectedType ? data.filter(pet => pet.type.toLowerCase() === selectedType.toLowerCase()) : data;
+        renderCards(filtered);
+
+        // Show favorites only
+        document.getElementById('show-favorites').addEventListener('click', () => {
+          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+          const filtered = allPets.filter(pet => favorites.includes(String(pet.id)));
+          renderCards(filtered);
+        });
+
+        // Set up generic filter buttons (type, personality, available)
+        document.querySelectorAll('.filter').forEach(button => {
+          button.addEventListener('click', () => {
+            const type = button.dataset.type;
+            const personality = button.dataset.personality;
+            const available = button.dataset.available;
+
+            let filtered = allPets;
+            if (type) filtered = filtered.filter(pet => pet.type.toLowerCase() === type.toLowerCase());
+            if (personality) filtered = filtered.filter(pet => pet.personality === personality);
+            if (available) filtered = filtered.filter(pet => pet.available === (available === 'true'));
+
+            renderCards(filtered);
+
+            // Redundant favorite listener (also appears above)
+            document.getElementById('show-favorites').addEventListener('click', () => {
+              const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+              const filtered = allPets.filter(pet => favorites.includes(String(pet.id)));
+              renderCards(filtered);
+            });
+          });
+        });
+
+        // Search bar filter (by name)
+        document.getElementById('search').addEventListener('input', (e) => {
+          const value = e.target.value.toLowerCase();
+          const results = allPets.filter(pet => pet.name.toLowerCase().includes(value));
+          renderCards(results);
+        });
+
+        // Breed filter toggle logic
+        document.getElementById('breed-toggle').addEventListener('click', () => {
+          const container = document.getElementById('breed-filters');
+          container.innerHTML = '';
+
+          const breedSet = new Set();
+          allPets.forEach(pet => {
+            if (pet.type.toLowerCase() === selectedType) {
+              breedSet.add(pet.name);
+            }
+          });
+
+          breedSet.forEach(breed => {
+            const btn = document.createElement('button');
+            btn.className = `filter ${selectedType}`;
+            btn.textContent = breed;
+            btn.onclick = () => {
+              const filtered = allPets.filter(p => p.name === breed && p.type.toLowerCase() === selectedType);
+              renderCards(filtered);
+
+              // Again, duplicate listener (possible optimization point)
+              document.getElementById('show-favorites').addEventListener('click', () => {
+                const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+                const filtered = allPets.filter(pet => favorites.includes(String(pet.id)));
+                renderCards(filtered);
+              });
+            };
+            container.appendChild(btn);
+          });
+
+          // Toggle breed filter visibility
+          container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+        });
+      });
+
+    // Render pet cards dynamically
+    function renderCards(pets) {
+      const container = document.getElementById('pet-list');
+      container.innerHTML = '';
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+
+      pets.forEach(pet => {
+        const card = document.createElement('div');
+        card.className = 'pet-card';
+        card.innerHTML = `
+          <img src="${pet.image}" alt="${pet.name}">
+          <button class="fav-btn ${favorites.includes(String(pet.id)) ? 'active' : ''}" data-id="${pet.id}">
+            ${favorites.includes(String(pet.id)) ? '♥' : '♡'}
+          </button>
+          <h3>${pet.name}</h3>
+        `;
+
+        // Toggle favorite status
+        card.querySelector('.fav-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const btn = e.target;
+          const id = btn.dataset.id;
+          const index = favorites.indexOf(id);
+          if (index > -1) {
+            favorites.splice(index, 1);
+            btn.classList.remove('active');
+            btn.textContent = '♡';
+          } else {
+            favorites.push(id);
+            btn.classList.add('active');
+            btn.textContent = '♥';
+          }
+          localStorage.setItem("favorites", JSON.stringify(favorites));
+        });
+
+        // Show modal on card click
+        card.onclick = () => openModal(pet);
+        container.appendChild(card);
+      });
+    }
+
+    // Open detail modal for selected pet
+    function openModal(pet) {
+      const modal = document.getElementById('modal');
+      const body = document.getElementById('modal-body');
+      body.innerHTML = `
+        <h2>${pet.name}</h2>
+        <img src="${pet.image}" alt="${pet.name}" style="width:100%; border-radius:10px; margin-bottom:10px;">
+        <p><strong>종류:</strong> ${pet.type}</p>
+        <p><strong>크기:</strong> ${pet.size}</p>
+        <p><strong>성격:</strong> ${pet.personality}</p>
+        <p><strong>입양 가능:</strong> ${pet.available ? '✅ 가능' : '❌ 불가능'}</p>
+        <p><strong>구조 장소:</strong> ${pet.description}</p>
+        <p><strong>특이사항:</strong> ${pet.note || '없음'}</p>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    // Close modal when 'X' is clicked
+    document.getElementById('close-modal').onclick = () => {
+      document.getElementById('modal').style.display = 'none';
+    };
+
+    // Close modal when clicking outside the content area
+    window.onclick = e => {
+      if (e.target.id === 'modal') {
+        document.getElementById('modal').style.display = 'none';
+      }
+    };
+  </script>
+
+  <!-- Google Translate widget container -->
+  <div id="google_translate_element" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+<script type="text/javascript">
+  // Google Translate initialization
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement(
+      {
+        pageLanguage: 'ko',
+        includedLanguages: 'ko,en,ja,zh-CN,es',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      },
+      'google_translate_element'
+    );
+  }
+</script>
+
+<!-- Load Google Translate script -->
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
