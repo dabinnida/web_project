@@ -1,11 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>list_of_dog_cat</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f18ce9b83ec57c198b3d9511bee12b8d&libraries=services"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>list_of_dog_cat</title>
+<link href="css/style.css" rel="stylesheet"/>
+<style>
     /* Base body styling */
     body {
       font-family: 'Arial', sans-serif;
@@ -145,32 +147,32 @@
   </style>
 </head>
 <body>
-  <main>
-    <!-- Top filter section including search, breed, personality, availability, and favorites -->
-    <div class="filters">
-      <input type="text" id="search" placeholder="검색...">
-      <button class="filter" data-personality="조용함">성격</button>
-      <button id="breed-toggle" class="filter">종 (Breed)</button>
-      <button class="filter" data-available="true">Available</button>
-      <button id="show-favorites" class="filter">즐겨찾기만 보기</button>
-    </div>
-
-    <!-- Hidden breed-specific filter buttons (toggled by breed button) -->
-    <div id="breed-filters" class="breed-filters" style="display:none;"></div>
-
-    <!-- Grid container for rendering pet cards -->
-    <div id="pet-list" class="grid"></div>
-  </main>
-
-  <!-- Modal window for pet detail view -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <span id="close-modal">&times;</span>
-      <div id="modal-body"></div>
-    </div>
-  </div>
-
-  <script>
+<main>
+<!-- Top filter section including search, breed, personality, availability, and favorites -->
+<div class="filters">
+<input id="search" placeholder="검색..." type="text"/>
+<button class="filter" data-personality="조용함">성격</button>
+<button class="filter" id="breed-toggle">종 (Breed)</button>
+<button class="filter" data-available="true">Available</button>
+<button class="filter" id="show-favorites">즐겨찾기만 보기</button>
+</div>
+<!-- Hidden breed-specific filter buttons (toggled by breed button) -->
+<div class="breed-filters" id="breed-filters" style="display:none;"></div>
+<!-- Grid container for rendering pet cards -->
+<div class="grid" id="pet-list"></div>
+</main>
+<!-- Modal window for pet detail view -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<span id="close-modal">×</span>
+<div id="modal-body"></div>
+<button id="map-button" style="margin-top: 10px; background-color: #b3d9ff; padding: 10px; border: none; border-radius: 10px; cursor: pointer;">
+      위치 지도로 보기
+    </button>
+<div id="map" style="width: 100%; height: 300px; margin-top: 10px; display: none;"></div>
+</div>
+</div>
+<script>
     // Get 'type' parameter from the URL (either 'dog' or 'cat')
     const urlParams = new URLSearchParams(window.location.search);
     const selectedType = urlParams.get('type');
@@ -298,21 +300,39 @@
     }
 
     // Open detail modal for selected pet
-    function openModal(pet) {
-      const modal = document.getElementById('modal');
-      const body = document.getElementById('modal-body');
-      body.innerHTML = `
-        <h2>${pet.name}</h2>
-        <img src="${pet.image}" alt="${pet.name}" style="width:100%; border-radius:10px; margin-bottom:10px;">
-        <p><strong>종류:</strong> ${pet.type}</p>
-        <p><strong>크기:</strong> ${pet.size}</p>
-        <p><strong>성격:</strong> ${pet.personality}</p>
-        <p><strong>입양 가능:</strong> ${pet.available ? '✅ 가능' : '❌ 불가능'}</p>
-        <p><strong>구조 장소:</strong> ${pet.description}</p>
-        <p><strong>특이사항:</strong> ${pet.note || '없음'}</p>
-      `;
-      modal.style.display = 'flex';
-    }
+    
+ function openModal(pet) {
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modal-body');
+  const mapButton = document.getElementById('map-button');
+  const mapDiv = document.getElementById('map');
+
+  body.innerHTML = `
+    <h2>${pet.name}</h2>
+    <img src="${pet.image}" alt="${pet.name}" style="width:100%; border-radius:10px; margin-bottom:10px;">
+    <p><strong>종류:</strong> ${pet.type}</p>
+    <p><strong>크기:</strong> ${pet.size}</p>
+    <p><strong>성격:</strong> ${pet.personality}</p>
+    <p><strong>입양 가능:</strong> ${pet.available ? '✅ 가능' : '❌ 불가능'}</p>
+    <p><strong>보호 위치:</strong> ${pet.description}</p>
+    <p><strong>특이사항:</strong> ${pet.note || '없음'}</p>
+  `;
+
+  modal.style.display = 'flex';
+
+  // 외부 카카오맵 링크로 열기
+  mapButton.onclick = () => {
+    const query = encodeURIComponent(pet.description);
+    const kakaoMapUrl = `https://map.kakao.com/?q=${query}`;
+    window.open(kakaoMapUrl, '_blank');
+  };
+
+  // (선택) 이전 지도는 숨김 처리
+  mapDiv.style.display = "none";
+}
+
+
+
 
     // Close modal when 'X' is clicked
     document.getElementById('close-modal').onclick = () => {
@@ -326,10 +346,8 @@
       }
     };
   </script>
-
-  <!-- Google Translate widget container -->
-  <div id="google_translate_element" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
-
+<!-- Google Translate widget container -->
+<div id="google_translate_element" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
 <script type="text/javascript">
   // Google Translate initialization
   function googleTranslateElementInit() {
@@ -343,9 +361,8 @@
     );
   }
 </script>
-
 <!-- Load Google Translate script -->
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=903fdf769034ae991b3b275883a38295&;libraries=services" type="text/javascript"></script>
 </body>
 </html>
